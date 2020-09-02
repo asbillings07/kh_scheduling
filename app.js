@@ -1,14 +1,38 @@
 const express = require('express')
 const { port } = require('./config')
-const app = express()
+const bodyParser = require('body-parser')
+const config = require('./config')
+const { logger } = require('./logger')
+const cors = require('cors')
 const textMessage = require('./routes/text')
 
+require('./mongoose')(config)
+
+const app = express()
+app.use(bodyParser.urlencoded({ extended: false }))
 app.use('/api', textMessage)
 app.get('/', (req, res, next) => {
   res.json({
     message: 'Welcome to the kh-scheduling server!'
   })
 })
+
+/// whitelisting for Cors
+const whitelist = ['http://localhost:3000', 'http://localhost:9000', 'http://localhost:3001']
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (whitelist.indexOf(origin) !== -1 || !origin) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  }
+}
+
+logger.debug("Overriding 'Express' logger")
+app.use(require('morgan')('combined', { stream: logger.stream }))
+
+app.use(cors({ credentials: true, origin: corsOptions }))
 
 // global error handler
 app.use('*', (req, res, next) => {
