@@ -3,11 +3,17 @@ const Schema = mongoose.Schema
 
 const talkCoodinatorSchema = new Schema(
   {
-    firstName: String,
-    lastName: String,
-    congregation: String,
-    email: String,
-    phoneNumber: Number
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    congregation: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    phoneNumber: { type: String, required: true },
+    speakers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Speaker'
+      }
+    ]
   },
   {
     timestamps: true

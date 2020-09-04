@@ -1,60 +1,100 @@
 const Speaker = require('../models/Speaker')
-const TalkCoodinator = require('../models/TalkCoodinator')
-const { asyncHanlder } = require('../helpers/errorHandler')
+const TalkCoordinator = require('../models/TalkCoordinator')
+const { asyncHandler } = require('../helpers/errorHandler')
 
-const createTalkCoordinator = asyncHanlder(async (req, res) => {
-  const { id } = req.currentUser
-  const newCourse = req.body
-  const course = await Course.create(newCourse)
-  await course.save()
-
-  const user = await User.findById(id)
-  user.courses.push(course)
-  await user.save()
-
-  res.status(200).send({ course })
-})
-
-const getAllCourses = asyncHanlder(async (req, res) => {
-  const courses = await Course.find().populate('user')
-  res.status(200).send(courses)
-})
-
-const getCourseById = asyncHanlder(async (req, res) => {
-  const id = req.query.id
-  const course = await Course.findById(id).populate('user')
-  res.status(200).send(course)
-})
-
-const updateCourse = asyncHanlder(async (req, res) => {
-  const user = req.currentUser
-  const newCourse = req.body
-  const id = +req.params.id
-  const verifyUser = await User.findById(id)
-  if (verifyUser._id === user._id) {
-    const course = await Course.findById(id)
-    course.update({
-      title: newCourse.title,
-      description: newCourse.description,
-      estimatedTime: newCourse.estimatedTime,
-      materialsNeeded: newCourse.materialsNeeded
-    })
-    res.status(200).send(course)
-  } else {
-    res.status(403).json({
-      errors: {
-        message:
-          'You can only edit courses that you own. Please choose a choose a course you own and try again.'
-      }
-    })
+const getTalkCoords = asyncHandler(async (req, res) => {
+  try {
+    const speakers = await TalkCoordinator.find({}).exec()
+    res.status(200).send({ success: true, error: false, speakers })
+  } catch (err) {
+    res.status(400).send({ success: false, error: true, err })
   }
 })
 
-// const deleteCourse = asyncHanlder(async (req, res) => {})
+const getTalkCoordById = asyncHandler(async (req, res) => {
+  const { id } = req.query
+  try {
+    const talkCoordWithSpeakers = await TalkCoordinator.findById(id).populate('speakers')
+    res.status(200).send({ success: true, error: false, talkCoordWithSpeakers })
+  } catch (err) {
+    res.status(400).send({ success: false, error: true, err })
+  }
+})
+
+// const getUserByTalkCoordinator = asyncHandler(async (req, res) => {
+//   const { id } = req.currentUser
+//   const user = await User.findById(id).populate('talkCoordinator')
+//   res.send(user)
+// })
+
+const createTalkCoord = asyncHandler(async (req, res) => {
+  const { speaker } = req.body
+  if (speaker !== {}) {
+    const createdSpeaker = await TalkCoordinator.create(speaker)
+    res.status(201).json({
+      success: true,
+      error: false,
+      message: 'Speaker created successfully!',
+      speaker: createdSpeaker
+    })
+  } else {
+    res.status(400).json({ success: false, error: true, message: 'You can not send an empty body' })
+  }
+})
+
+const createMultiTalkCoord = asyncHandler(async (req, res) => {
+  const { speakers } = req.body
+  try {
+    if (Array.isArray(speakers)) {
+      const createdSpeakers = await TalkCoordinator.insertMany(speakers)
+      res.status(201).json({
+        success: true,
+        message: `${speakers.length} speakers were successfully stored`,
+        createdSpeakers
+      })
+    } else {
+      const speaker = await TalkCoordinator.create(newSpeaker)
+      res.status(200).json({ speaker })
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, error: true, message: err })
+  }
+})
+
+const updateTalkCoord = asyncHandler(async (req, res) => {
+  const { id, speakerUpdates } = req.body
+  try {
+    const updatedSpeaker = await TalkCoordinator.updateOne({ _id: id }, speakerUpdates)
+    res.status(200).json({
+      success: true,
+      error: false,
+      message: 'speaker updated successfully',
+      updatedSpeaker
+    })
+  } catch (err) {
+    res.status(400).json({ success: false, error: true, message: err })
+  }
+})
+
+const deleteTalkCoord = asyncHandler(async (req, res) => {
+  const { id } = req.body
+  const callback = (err, docs) => {
+    if (err) {
+      res.status(200).json({ success: false, error: true, message: err })
+    } else {
+      res
+        .status(200)
+        .json({ success: true, error: false, message: 'speaker has been deleted', docs })
+    }
+  }
+  TalkCoordinator.findByIdAndRemove(id, callback)
+})
 
 module.exports = {
-  createCourse,
-  getAllCourses,
-  getCourseById,
-  updateCourse
+  getTalkCoords,
+  getTalkCoordById,
+  createTalkCoord,
+  createMultiTalkCoord,
+  updateTalkCoord,
+  deleteTalkCoord
 }
