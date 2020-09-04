@@ -10,7 +10,7 @@ const googleMailClientSecret = process.env.GOOGLE_MAIL_CLIENT_SECRET
 const refreshToken = process.env.REFRESH_TOKEN
 
 module.exports = {
-  refreshToken
+  refreshToken,
   googleMailClientSecret,
   googleMailClientId,
   accountSid,
