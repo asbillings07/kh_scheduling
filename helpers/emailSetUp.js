@@ -47,7 +47,7 @@ exports.sendEmail = (mailOptions, successfulMessage) => {
   const transporter = nodemailer.createTransport(creds)
   logger.log(mailOptions)
   transporter.sendMail(mailOptions, (err, res) => {
-    .log({ err })
+    logger.log({ err })
     logger.log({ res })
     if (res) {
       logger.log('Sending Email')
