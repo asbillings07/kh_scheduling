@@ -3,18 +3,12 @@ const Schema = mongoose.Schema
 
 const speakerSchema = new Schema(
   {
-    firstName: String,
-    lastName: String,
-    congregation: String,
-    email: String,
-    phoneNumber: Number,
-    dateOfTalk: { type: Date, index: true },
-    TalkCoodinator: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'TalkCoodinator'
-      }
-    ]
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    congregation: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    phoneNumber: { type: String, required: true },
+    dateOfTalk: { type: Date, index: true }
   },
   {
     timestamps: true
