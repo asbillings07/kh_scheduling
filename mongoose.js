@@ -6,6 +6,7 @@ const { dbUrl } = require('./config')
 
 const Speaker = require('./models/Speaker')
 const TalkCoodinator = require('./models/TalkCoordinator')
+const Congregation = require('./models/Congregation')
 
 module.exports = (config) => {
   const options = {
