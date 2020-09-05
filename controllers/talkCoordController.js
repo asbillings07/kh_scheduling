@@ -1,13 +1,14 @@
-const Speaker = require('../models/Speaker')
 const TalkCoordinator = require('../models/TalkCoordinator')
+const { createWithAnotherModel } = require('../helpers/mongoHelpers')
 const { asyncHandler } = require('../helpers/errorHandler')
+const Congregation = require('../models/Congregation')
 
 const getTalkCoords = asyncHandler(async (req, res) => {
   try {
-    const speakers = await TalkCoordinator.find({}).exec()
-    res.status(200).send({ success: true, error: false, speakers })
+    const talkCoords = await TalkCoordinator.find({}).exec()
+    res.status(200).send({ success: true, talkCoordinators: talkCoords })
   } catch (err) {
-    res.status(400).send({ success: false, error: true, err })
+    res.status(400).send({ error: true, err })
   }
 })
 
@@ -15,69 +16,69 @@ const getTalkCoordById = asyncHandler(async (req, res) => {
   const { id } = req.query
   try {
     const talkCoordWithSpeakers = await TalkCoordinator.findById(id).populate('speakers')
-    res.status(200).send({ success: true, error: false, talkCoordWithSpeakers })
+    res.status(200).send({ success: true, talkCoordWithSpeakers })
   } catch (err) {
-    res.status(400).send({ success: false, error: true, err })
+    res.status(400).send({ error: true, err })
   }
 })
 
-// const getUserByTalkCoordinator = asyncHandler(async (req, res) => {
-//   const { id } = req.currentUser
-//   const user = await User.findById(id).populate('talkCoordinator')
-//   res.send(user)
-// })
-
 const createTalkCoord = asyncHandler(async (req, res) => {
-  const { speaker } = req.body
-  if (speaker !== {}) {
-    const createdSpeaker = await TalkCoordinator.create(speaker)
-    res.status(201).json({
-      success: true,
-      error: false,
-      message: 'Speaker created successfully!',
-      speaker: createdSpeaker
-    })
+  const { congId } = req.body
+  const { talkCoord } = req.body
+
+  if (typeof congId == 'string') {
+    await createWithAnotherModel(
+      Congregation,
+      congId,
+      TalkCoordinator,
+      talkCoord,
+      'talkCoordinators',
+      res
+    )
   } else {
-    res.status(400).json({ success: false, error: true, message: 'You can not send an empty body' })
+    res.status(400).json({
+      error: true,
+      message: 'You must pair a talk coordinator to a congregation'
+    })
   }
 })
 
 const createMultiTalkCoord = asyncHandler(async (req, res) => {
-  const { speakers } = req.body
+  const { talkCoords } = req.body
   try {
-    if (Array.isArray(speakers)) {
-      const createdSpeakers = await TalkCoordinator.insertMany(speakers)
+    if (Array.isArray(talkCoords)) {
+      const createdTalkCoords = await TalkCoordinator.insertMany(talkCoords)
       res.status(201).json({
         success: true,
-        message: `${speakers.length} speakers were successfully stored`,
-        createdSpeakers
+        message: `${talkCoords.length} speakers were successfully stored`,
+        createdTalkCoords
       })
     } else {
-      const speaker = await TalkCoordinator.create(newSpeaker)
-      res.status(200).json({ speaker })
+      const talkCoord = await TalkCoordinator.create(talkCoords)
+      res.status(200).json({ talkCoord })
     }
   } catch (err) {
-    res.status(500).json({ success: false, error: true, message: err })
+    res.status(500).json({ error: true, err })
   }
 })
 
 const updateTalkCoord = asyncHandler(async (req, res) => {
-  const { id, speakerUpdates } = req.body
+  const { id, talkCoordUpdates } = req.body
   try {
-    const updatedSpeaker = await TalkCoordinator.updateOne({ _id: id }, speakerUpdates)
+    const updatedTalkCoord = await TalkCoordinator.updateOne({ _id: id }, talkCoordUpdates)
     res.status(200).json({
       success: true,
       error: false,
       message: 'speaker updated successfully',
-      updatedSpeaker
+      updatedTalkCoord
     })
   } catch (err) {
-    res.status(400).json({ success: false, error: true, message: err })
+    res.status(400).json({ error: true, err })
   }
 })
 
 const deleteTalkCoord = asyncHandler(async (req, res) => {
-  const { id } = req.body
+  const { id } = req.query
   const callback = (err, docs) => {
     if (err) {
       res.status(200).json({ success: false, error: true, message: err })

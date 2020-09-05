@@ -1,6 +1,8 @@
 const Speaker = require('../models/Speaker')
 const TalkCoordinator = require('../models/TalkCoordinator')
+const { createWithAnotherModel } = require('../helpers/mongoHelpers')
 const { asyncHandler } = require('../helpers/errorHandler')
+const Congregation = require('../models/Congregation')
 
 const getSpeakers = asyncHandler(async (req, res) => {
   try {
@@ -21,38 +23,21 @@ const getSpeakerById = asyncHandler(async (req, res) => {
   }
 })
 
-const createSpeakerWithTalkCoord = (talkCoordId, speaker) => {
-  return Speaker.create(speaker).then((docSpeaker) => {
-    console.log('\n>> Created Speaker:\n', docSpeaker)
-
-    return TalkCoordinator.findByIdAndUpdate(
-      talkCoordId,
-      { $push: { speakers: docSpeaker._id } },
-      { new: true, useFindAndModify: false }
-    )
-  })
-}
-
 const createSpeaker = asyncHandler(async (req, res) => {
   const { talkCoordId } = req.body
   const { speaker } = req.body
+  const { congId } = req.body
   if (req.body !== {}) {
     if (talkCoordId) {
-      const info = createSpeakerWithTalkCoord(talkCoordId, speaker)
-      res.status(201).json({
-        success: true,
-        error: false,
-        message: 'Speaker created successfully!',
-        speaker: createdSpeaker
-      })
+      await createWithAnotherModel(TalkCoordinator, talkCoordId, Speaker, speaker, 'speakers', res)
     } else {
-      const createdSpeaker = await Speaker.create(speaker)
-      res.status(201).json({
-        success: true,
-        error: false,
-        message: 'Speaker created successfully!',
-        speaker: createdSpeaker
-      })
+      await createWithAnotherModel(Congregation, congId, Speaker, speaker, 'speakers', res)
+      // res.status(201).json({
+      //   success: true,
+      //   error: false,
+      //   message: 'Speaker created successfully!',
+      //   speaker: createdSpeaker
+      // })
     }
   } else {
     res.status(400).json({ success: false, error: true, message: 'You can not send an empty body' })
@@ -94,7 +79,7 @@ const updateSpeaker = asyncHandler(async (req, res) => {
 })
 
 const deleteSpeaker = asyncHandler(async (req, res) => {
-  const { id } = req.body
+  const { id } = req.query
   const callback = (err, docs) => {
     if (err) {
       res.status(200).json({ success: false, error: true, message: err })
