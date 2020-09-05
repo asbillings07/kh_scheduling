@@ -1,5 +1,6 @@
 const express = require('express')
-const { port } = require('./config')
+const { port, sessionSecret } = require('./config')
+require('dotenv').config()
 const bodyParser = require('body-parser')
 var cookieParser = require('cookie-parser')
 const config = require('./config')
@@ -9,25 +10,10 @@ const textMessageRoute = require('./routes/text')
 const emailMessageRoute = require('./routes/email')
 const speakerRoute = require('./routes/speaker')
 const talkCoordRoute = require('./routes/talkCoord')
-
+const congregationRoute = require('./routes/congregation')
 require('./mongoose')(config)
-
 const app = express()
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true }))
-app.use('/api', textMessageRoute)
-app.use('/api', emailMessageRoute)
-app.use('/api', speakerRoute)
-app.use('/api', talkCoordRoute)
 
-app.get('/', (req, res, next) => {
-  res.json({
-    message: 'Welcome to the kh-scheduling server!'
-  })
-})
-
-/// whitelisting for Cors
-const whitelist = ['http://localhost:3000', 'http://localhost:9000', 'http://localhost:3001']
 const corsOptions = {
   origin: (origin, callback) => {
     if (whitelist.indexOf(origin) !== -1 || !origin) {
@@ -37,11 +23,27 @@ const corsOptions = {
     }
   }
 }
+app.use(cors({ credentials: true, origin: corsOptions }))
+
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use('/api', textMessageRoute)
+app.use('/api', emailMessageRoute)
+app.use('/api', speakerRoute)
+app.use('/api', talkCoordRoute)
+app.use('/api', congregationRoute)
+
+app.get('/', (req, res, next) => {
+  res.json({
+    message: 'Welcome to the kh-scheduling server!'
+  })
+})
+
+/// whitelisting for Cors
+const whitelist = ['http://localhost:3000', 'http://localhost:9000', 'http://localhost:3001']
 
 logger.debug("Overriding 'Express' logger")
 app.use(require('morgan')('combined', { stream: logger.stream }))
-
-app.use(cors({ credentials: true, origin: corsOptions }))
 
 // global error handler
 app.use('*', (req, res, next) => {
