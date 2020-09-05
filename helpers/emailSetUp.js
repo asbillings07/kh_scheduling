@@ -45,13 +45,11 @@ exports.sendEmail = (mailOptions, successfulMessage) => {
   }
 
   const transporter = nodemailer.createTransport(creds)
-  logger.log(mailOptions)
   transporter.sendMail(mailOptions, (err, res) => {
     logger.log({ err })
-    logger.log({ res })
     if (res) {
       logger.log('Sending Email')
-      logger.log(res)
+      logger.log('RES', res)
       res.status(200).json(successfulMessage)
     } else {
       res.status(400).send({ error: `There was an error: ${err}` })

@@ -7,13 +7,15 @@ module.exports = {
     subject: title,
     html: `
         <p>
-        Hello, Bro ${name}, 
+        Hello Bro ${name}, 
         </p>
-        <br/>
         <p>
           ${message}
         </p>
-        
+        <p>
+        Thanks,
+        </p>
+        <p>Aaron Billings</p>
       `
   })
 }
