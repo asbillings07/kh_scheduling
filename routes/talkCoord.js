@@ -10,11 +10,11 @@ const {
   deleteTalkCoord
 } = require('../controllers/talkCoordController')
 
-router.get('/getTalkCoords', getTalkCoords)
-router.get('/getTalkCoord', getTalkCoordById)
-router.post('/createTalkCoord', createTalkCoord)
-router.post('/massCreateTalkCoords', createMultiTalkCoord)
-router.put('/updateTalkCoord', updateTalkCoord)
-router.post('/deleteTalkCoord', deleteTalkCoord)
+router.get('/getTalkcoords', getTalkCoords)
+router.get('/getTalkcoord', getTalkCoordById)
+router.post('/createTalkcoord', createTalkCoord)
+router.post('/massCreateTalkcoords', createMultiTalkCoord)
+router.put('/updateTalkcoord', updateTalkCoord)
+router.post('/deleteTalkcoord', deleteTalkCoord)
 
 module.exports = router
