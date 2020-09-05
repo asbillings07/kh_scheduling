@@ -3,13 +3,13 @@ const { fromPhone } = require('../config')
 module.exports = {
   textConfirm: (textMessage, name, phoneNumber) => ({
     body: `
-      Hi Bro. ${name}!
+      Hi Bro ${name},
 
-      ${textMessage}
+    ${textMessage.trim()}
 
-      Thanks,
+    Thanks,
 
-      Aaron Billings
+    Aaron Billings
     `,
     from: fromPhone,
     to: phoneNumber
